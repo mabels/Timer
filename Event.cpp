@@ -47,8 +47,8 @@ void Event::update(unsigned long now)
 		switch (eventType)
 		{
 			case EVENT_EVERY:
-				(*callback)();
-				break;
+		 		(*callback)(context);
+		 		break;
 
 			case EVENT_OSCILLATE:
 				pinState = ! pinState;

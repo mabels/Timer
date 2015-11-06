@@ -37,9 +37,29 @@ class Timer
 public:
   Timer(void);
 
-  int8_t every(unsigned long period, void (*callback)(void));
-  int8_t every(unsigned long period, void (*callback)(void), int repeatCount);
-  int8_t after(unsigned long duration, void (*callback)(void));
+
+  // inline call of one delegated function has the same size
+  // as a non inlined function call
+  int8_t every(unsigned long period, void (*callback)(void)) {
+    return every(period, simpleDelegate, (void*)callback, -1);
+  }
+  int8_t every(unsigned long period, void (*callback)(void), int repeatCount) {
+    return every(period, simpleDelegate, (void*)callback, repeatCount);
+  }
+  int8_t after(unsigned long duration, void (*callback)(void)) {
+    return every(duration, simpleDelegate, (void*)callback, 1);
+  }
+
+  int8_t every(unsigned long period, void (*callback)(void *), void *context) {
+    return every(period, callback, context, -1);
+  }
+  int8_t every(unsigned long period, void (*callback)(void *), void *context, int repeatCount);
+
+  int8_t after(unsigned long duration, void (*callback)(void *), void *context) {
+    return every(duration, callback, context, 1);
+  }
+
+
   int8_t oscillate(uint8_t pin, unsigned long period, uint8_t startingValue);
   int8_t oscillate(uint8_t pin, unsigned long period, uint8_t startingValue, int repeatCount);
   
@@ -62,6 +82,10 @@ protected:
   Event _events[MAX_NUMBER_OF_EVENTS];
   int8_t findFreeEventIndex(void);
 
+private:
+  static void simpleDelegate(void *callback) {
+    (*((void (*)())(callback)))();
+  }
 };
 
 #endif
